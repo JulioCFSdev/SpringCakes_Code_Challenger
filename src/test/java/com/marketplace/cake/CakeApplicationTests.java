@@ -1,10 +1,10 @@
-package com.julio.web;
+package com.marketplace.cake;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WebApplicationTests {
+class CakeApplicationTests {
 
 	@Test
 	void contextLoads() {
