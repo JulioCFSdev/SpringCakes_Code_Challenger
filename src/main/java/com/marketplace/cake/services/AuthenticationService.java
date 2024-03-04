@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface AuthenticationService {
     User registerUser(RegisterRequestDTO data);
+    boolean validateEmail(String email);
     LoginResponseDTO loginUser(AuthenticationRequestDTO data);
     List<User> getActiveUsers();
     User getUserById(String id);

@@ -12,9 +12,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AuthenticationServiceImplement implements AuthenticationService {
@@ -28,7 +31,11 @@ public class AuthenticationServiceImplement implements AuthenticationService {
     @Autowired
     private TokenService tokenService;
     @Override
-    public User registerUser(RegisterRequestDTO data) throws DuplicateResourceException, PasswordConfirmationException{
+    public User registerUser(RegisterRequestDTO data) throws
+            DuplicateResourceException,
+            PasswordConfirmationException,
+            EmailNotValidException{
+
         if(repository.findUserByLogin(data.login()) != null){
             throw new DuplicateResourceException("Account has be active");
         }
@@ -40,6 +47,9 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         }
         if(repository.findByCpf(data.cpf()) != null){
             throw new DuplicateResourceException("CPF has already been registered");
+        }
+        if(!validateEmail(data.email())){
+            throw new EmailNotValidException("Email not is valid.");
         }
 
 
@@ -57,6 +67,13 @@ public class AuthenticationServiceImplement implements AuthenticationService {
 
 
         return repository.save(newUser);
+    }
+
+    @Override
+    public boolean validateEmail(String email) {
+        Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 
     @Override

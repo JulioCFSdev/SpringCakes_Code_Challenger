@@ -38,4 +38,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
         RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
     }
+
+    @ExceptionHandler(EmailNotValidException.class)
+    public ResponseEntity<Object> EmailNotValidExceptionHandler(EmailNotValidException exception){
+        RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
+    }
 }
