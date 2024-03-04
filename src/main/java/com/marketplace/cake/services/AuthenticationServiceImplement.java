@@ -53,6 +53,9 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         if(!validateCpf(data.cpf())){
             throw new ArgumentNotValidException("Cpf not is valid.");
         }
+        if(!validatePhoneNumber(data.phoneNumber())){
+            throw new ArgumentNotValidException("phone number not is valid.");
+        }
 
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password1());
@@ -112,6 +115,13 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             System.out.println(11 - remainder);
             return 11 - remainder;
         }
+    }
+
+    @Override
+    public boolean validatePhoneNumber(String phoneNumber) {
+        Pattern pattern = Pattern.compile("^(\\d{1,3})(\\d{2,3})(\\d{8,9})$\n");
+        Matcher matcher = pattern.matcher(phoneNumber);
+        return matcher.matches();
     }
 
     @Override

@@ -10,6 +10,7 @@ public interface AuthenticationService {
     boolean validateEmail(String email);
     boolean validateCpf(String cpf);
     int getDigitCpfVerification(int maxMultiplier, String[] cpfParts);
+    boolean validatePhoneNumber(String phoneNumber);
     LoginResponseDTO loginUser(AuthenticationRequestDTO data);
     List<User> getActiveUsers();
     User getUserById(String id);
