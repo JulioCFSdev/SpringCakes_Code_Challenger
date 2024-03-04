@@ -3,15 +3,9 @@ package com.marketplace.cake.infra;
 import com.marketplace.cake.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler{
@@ -39,8 +33,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler{
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
     }
 
-    @ExceptionHandler(EmailNotValidException.class)
-    public ResponseEntity<Object> EmailNotValidExceptionHandler(EmailNotValidException exception){
+    @ExceptionHandler(ArgumentNotValidException.class)
+    public ResponseEntity<Object> ArgumentNotValidExceptionHandler(ArgumentNotValidException exception){
         RestErrorMessage threatResponse = new RestErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(threatResponse);
     }

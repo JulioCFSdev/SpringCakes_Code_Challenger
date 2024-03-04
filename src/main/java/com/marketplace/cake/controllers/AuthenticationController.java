@@ -2,10 +2,7 @@ package com.marketplace.cake.controllers;
 
 import com.marketplace.cake.domain.user.User;
 import com.marketplace.cake.dtos.user.*;
-import com.marketplace.cake.exceptions.DuplicateResourceException;
-import com.marketplace.cake.exceptions.PasswordConfirmationException;
-import com.marketplace.cake.exceptions.UserDeletedException;
-import com.marketplace.cake.exceptions.UserNotFoundException;
+import com.marketplace.cake.exceptions.*;
 import com.marketplace.cake.services.AuthenticationServiceImplement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +33,7 @@ public class AuthenticationController {
         try {
             User newUser = authenticationService.registerUser(data);
             return ResponseEntity.ok(newUser);
-        } catch (DuplicateResourceException | PasswordConfirmationException exception){
+        } catch (DuplicateResourceException | PasswordConfirmationException | ArgumentNotValidException exception){
             return ResponseEntity.badRequest().body(exception.getMessage());
         }
     }

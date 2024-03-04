@@ -8,6 +8,8 @@ import java.util.List;
 public interface AuthenticationService {
     User registerUser(RegisterRequestDTO data);
     boolean validateEmail(String email);
+    boolean validateCpf(String cpf);
+    int getDigitCpfVerification(int maxMultiplier, String[] cpfParts);
     LoginResponseDTO loginUser(AuthenticationRequestDTO data);
     List<User> getActiveUsers();
     User getUserById(String id);

@@ -12,7 +12,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class AuthenticationServiceImplement implements AuthenticationService {
     public User registerUser(RegisterRequestDTO data) throws
             DuplicateResourceException,
             PasswordConfirmationException,
-            EmailNotValidException{
+            ArgumentNotValidException {
 
         if(repository.findUserByLogin(data.login()) != null){
             throw new DuplicateResourceException("Account has be active");
@@ -49,7 +48,10 @@ public class AuthenticationServiceImplement implements AuthenticationService {
             throw new DuplicateResourceException("CPF has already been registered");
         }
         if(!validateEmail(data.email())){
-            throw new EmailNotValidException("Email not is valid.");
+            throw new ArgumentNotValidException("Email not is valid.");
+        }
+        if(!validateCpf(data.cpf())){
+            throw new ArgumentNotValidException("Cpf not is valid.");
         }
 
 
@@ -74,6 +76,42 @@ public class AuthenticationServiceImplement implements AuthenticationService {
         Pattern pattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    @Override
+    public boolean validateCpf(String cpf) {
+        Pattern pattern = Pattern.compile("^\\d{11}$");
+        Matcher matcher = pattern.matcher(cpf);
+        if(!matcher.matches()) return false;
+
+        String[] cpfParts = cpf.split("");
+        int firstDigit = getDigitCpfVerification(10, cpfParts);
+        int secondDigit = getDigitCpfVerification(11, cpfParts);
+
+        return cpfParts[9].equals(String.valueOf(firstDigit)) && cpfParts[10].equals(String.valueOf(secondDigit));
+    }
+
+    @Override
+    public int getDigitCpfVerification(int maxMultiplier, String[] cpfParts) {
+        int sum = 0;
+        int maxLength = maxMultiplier - 1;
+        int x = maxMultiplier;
+
+        for(int i = 0; i < maxLength; i++){
+            sum += Integer.parseInt(cpfParts[i]) * x;
+            System.out.println(sum);
+            x--;
+        }
+
+        System.out.println(sum);
+        int remainder = sum % 11;
+        if(remainder < 2){
+            System.out.println(0);
+            return 0;
+        } else {
+            System.out.println(11 - remainder);
+            return 11 - remainder;
+        }
     }
 
     @Override
