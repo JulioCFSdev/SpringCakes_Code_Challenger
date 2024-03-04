@@ -1,55 +1,79 @@
 package com.marketplace.cake.controllers;
 
-import com.marketplace.cake.domain.user.AuthenticationDTO;
-import com.marketplace.cake.domain.user.LoginResponseDTO;
-import com.marketplace.cake.domain.user.RegisterDTO;
 import com.marketplace.cake.domain.user.User;
-import com.marketplace.cake.infra.security.TokenService;
-import com.marketplace.cake.repositories.UserRepository;
+import com.marketplace.cake.dtos.user.*;
+import com.marketplace.cake.exceptions.DuplicateResourceException;
+import com.marketplace.cake.exceptions.PasswordConfirmationException;
+import com.marketplace.cake.exceptions.UserDeletedException;
+import com.marketplace.cake.exceptions.UserNotFoundException;
+import com.marketplace.cake.services.AuthenticationServiceImplement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("api/auth")
 public class AuthenticationController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private AuthenticationServiceImplement authenticationService;
 
-    @Autowired
-    private UserRepository repository;
-
-    @Autowired
-    private TokenService tokenService;
-
-    @PostMapping("login")
-    public ResponseEntity login (@RequestBody @Valid AuthenticationDTO data){
-        var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
-
-        var token = tokenService.generateToken((User) auth.getPrincipal());
-
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+    @PostMapping("v1/login")
+    public ResponseEntity<?> login (@RequestBody @Valid AuthenticationRequestDTO data){
+        try{
+            return ResponseEntity.ok(authenticationService.loginUser(data));
+        } catch (UserNotFoundException | UserDeletedException | BadCredentialsException exception){
+            return ResponseEntity.status(403).body(exception.getMessage());
+        }
     }
 
-    @PostMapping("register")
-    public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
-        if(this.repository.findByLogin(data.login()) != null) return  ResponseEntity.badRequest().build();
+    @PostMapping("v1/register")
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequestDTO data){
+        try {
+            User newUser = authenticationService.registerUser(data);
+            return ResponseEntity.ok(newUser);
+        } catch (DuplicateResourceException | PasswordConfirmationException exception){
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
 
-        String encryptedPassord = new BCryptPasswordEncoder().encode(data.password());
-        User newUser = new User(data.login(), encryptedPassord, data.role());
+    @GetMapping("v1/list")
+    public ResponseEntity<?> getUserCredentials(){
+        List<User> users = authenticationService.getActiveUsers();
+        return ResponseEntity.ok(users);
+    }
 
-        this.repository.save(newUser);
-        return ResponseEntity.ok().build();
+    @PatchMapping("v1/update")
+    public ResponseEntity<?> updateUser(@RequestBody @Valid UpdateRequestDTO data){
+        try {
+            User updatedUser = authenticationService.updateUser(data);
+            return ResponseEntity.ok(updatedUser);
+        } catch (DuplicateResourceException | UserNotFoundException exception){
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+
+    @PatchMapping("v1/updatePassword")
+    public ResponseEntity<?> updateUserPassword(@RequestBody @Valid UpdatePasswordRequestDTO data){
+        try {
+            User updatedUser = authenticationService.updateUserPassword(data);
+            return ResponseEntity.ok(updatedUser);
+        } catch (UserNotFoundException | PasswordConfirmationException exception){
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+
+    @PatchMapping("v1/delete")
+    public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequestDTO data){
+        try{
+            authenticationService.deleteUser(data);
+            return ResponseEntity.ok("User was successfully deleted.");
+        } catch (UserNotFoundException | BadCredentialsException  exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 }

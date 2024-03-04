@@ -1,8 +1,4 @@
-package com.marketplace.cake.domain.user;
-
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Collection;
+package com.marketplace.cake.enums;
 
 public enum UserRole {
     ADMIN("admin"),
